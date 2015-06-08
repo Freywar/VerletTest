@@ -3,25 +3,16 @@
 
 var App = cls(MObject, function (options)
 {
-    this._domNode = document.createElement('canvas');
-    this._context = this._domNode.getContext('2d');
+    this._domNode = document.createElement('div');
+    this._domNode.className += 'App';
+    this._canvas = document.createElement('canvas');
+    this._context = this._canvas.getContext('2d');
     this._infoBox = document.createElement('div');
-    this._infoBox.style.backgroundColor = 'rgba(255,255,255,0.5)';
-    this._infoBox.style.border = '1px solid white';
-    this._infoBox.style.boxSizing = 'borderBox';
-    this._infoBox.style.pointerEvents = 'none';
-    this._infoBox.style.position = 'absolute';
+    this._infoBox.className += 'Box';
     this._infoBox.style.left = '0';
-    this._infoBox.style.top = '0';
-
     this._helpBox = document.createElement('div');
-    this._helpBox.style.backgroundColor = 'rgba(255,255,255,0.5)';
-    this._helpBox.style.border = '1px solid white';
-    this._helpBox.style.boxSizing = 'borderBox';
-    this._helpBox.style.pointerEvents = 'none';
-    this._helpBox.style.position = 'absolute';
+    this._helpBox.className += 'Box';
     this._helpBox.style.right = '0';
-    this._helpBox.style.top = '0';
     this._helpBox.innerHTML = [
        'LMB: drag ball',
        'RMB: toggle ball info',
@@ -29,6 +20,9 @@ var App = cls(MObject, function (options)
        'F2: restart'
     ].join('<br />');
 
+    this._domNode.appendChild(this._canvas);
+    this._domNode.appendChild(this._infoBox);
+    this._domNode.appendChild(this._helpBox);
 
     this._load();
     App.base.constructor.apply(this, arguments);
@@ -52,6 +46,8 @@ App.property('attractedPoint', { value: null });
 App.property('infoedPoint', { value: null })
 App.property('context', { value: null });
 App.property('infoBox', { value: null });
+App.property('helpBox', { value: null });
+App.property('canvas', { value: null });
 
 App.property('domNode', { value: null, get: true });
 App.property('parentNode', {
@@ -59,24 +55,16 @@ App.property('parentNode', {
     set: function (value)
     {
         if (this._domNode.parentNode)
-        {
-            this._domNode.parentNode.removeChild(this._helpBox);
-            this._domNode.parentNode.removeChild(this._infoBox);
             this._domNode.parentNode.removeChild(this._domNode);
-        }
         if (value)
-        {
             value.appendChild(this._domNode);
-            value.appendChild(this._infoBox);
-            value.appendChild(this._helpBox);
-        }
     }
 });
 App.property('width', {
-    get: function () { return this._domNode.width; },
+    get: function () { return this._canvas.width; },
     set: function (value)
     {
-        this._domNode.style.width = (this._domNode.width = value) + 'px';
+        this._canvas.style.width = (this._canvas.width = value) + 'px';
         this._frictionBox.setWidth(value / 2);
         this._box.setLeft(value / 2);
         this._box.setWidth(value / 2);
@@ -84,10 +72,10 @@ App.property('width', {
     }
 });
 App.property('height', {
-    get: function () { return this._domNode.height; },
+    get: function () { return this._canvas.height; },
     set: function (value)
     {
-        this._domNode.style.height = (this._domNode.height = value) + 'px';
+        this._canvas.style.height = (this._canvas.height = value) + 'px';
         this._frictionBox.setHeight(value);
         this._box.setHeight(value);
     }
@@ -101,7 +89,7 @@ App.method('_onAnimationFrame', function ()
     if (dt)
     {
         this._scene.update(dt / 1000);
-        this._domNode.width = this._domNode.width;//a bit faster than clearRect
+        this._canvas.width = this._canvas.width;//a bit faster than clearRect
         this._scene.render(this._context);
     }
     this._prevT = t;
@@ -202,7 +190,8 @@ App.method('_save', function ()
             height: this.getHeight(),
             points: points.map(function (a) { return a.serialize() }),
             frictionIndices: this._frictionBox.getPoints().map(function (a) { return points.indexOf(a) }),
-            normalIndices: this._box.getPoints().map(function (a) { return points.indexOf(a) })
+            normalIndices: this._box.getPoints().map(function (a) { return points.indexOf(a) }),
+            infoedIndex: this._infoedPoint ? points.indexOf(this._infoedPoint) : -1
         }));
     }
 });
@@ -226,6 +215,7 @@ App.method('_load', function ()
         this._intersection.setPoints([].concat(points));
         this._frictionBox.setPoints(data.frictionIndices.map(function (a) { return points[a] }));
         this._box.setPoints(data.normalIndices.map(function (a) { return points[a] }));
+        this._infoedPoint = points[data.infoedIndex];
     }
     this._scene = new Scene({ points: points, restrictions: restrictions });
 })
@@ -240,7 +230,7 @@ App.method('_updateInfoBox', function ()
             vx = (x - this._infoedPoint.getPx()) / this._infoedPoint.getPdt(),
             vy = (y - this._infoedPoint.getPy()) / this._infoedPoint.getPdt();
         this._infoBox.innerHTML = [
-            'Color: ' + '<div style="width:16px; height:16px; display:inline-block;background-color:' + this._infoedPoint.getColor() + '" ></div>',
+            'Color: ' + '<div class="Color" style="background-color:' + this._infoedPoint.getColor() + '" ></div>',
             'Mass: 1',
             'Radius: ' + this._infoedPoint.getR().toFixed(2),
             'Position: (' + x.toFixed(2) + '; ' + y.toFixed(2) + ')',
