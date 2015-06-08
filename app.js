@@ -11,7 +11,7 @@ var App = cls(MObject, function (options)
         points.push(new Ball({ cx: Math.random() * 1000, cy: Math.random() * 1000, r: Math.random() * 100 }));
     var restrictions = [
         this._intersection = new Intersection({ points: [].concat(points) }),
-        this._frictionBox = new FrictionBox({ points: [].concat(points), color: 'rgba(0,0,255,0.2)' }),
+        this._frictionBox = new FrictionBox({ points: [].concat(points), color: 'rgba(0,0,255,0.2)', k: 0.05 }),
         this._box = new Box({ points: [], color: 'rgba(255,0,0,0.2)' }),
         this._attraction = new Attractor({ k: 0.05 })
     ];
@@ -107,10 +107,13 @@ App.method('_onMouseMove', function (event)
 
 App.method('_onMouseUp', function (event)
 {
-    ((this._attractedPoint.getCx() - this._attractedPoint.getR() > this._frictionBox.getWidth()) ?
-        this._box :
-        this._frictionBox
-        ).getPoints().push(this._attractedPoint);
-    this._attraction.setPoints(null);
-    this._attractedPoint = null;
+    if (this._attractedPoint)
+    {
+        ((this._attractedPoint.getCx() - this._attractedPoint.getR() > this._frictionBox.getWidth()) ?
+            this._box :
+            this._frictionBox
+            ).getPoints().push(this._attractedPoint);
+        this._attraction.setPoints(null);
+        this._attractedPoint = null;
+    }
 });

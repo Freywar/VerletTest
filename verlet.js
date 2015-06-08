@@ -86,6 +86,7 @@ Intersection.method('update', function (dt)
 
 var Box = cls(Restriction, function () { Box.base.constructor.apply(this, arguments) });
 Box.property('color', { value: '#000000', get: true, set: true });
+Box.property('k', { value: 1, get: true, set: true });
 Box.property('left', { value: 0, get: true, set: true });
 Box.property('top', { value: 0, get: true, set: true });
 Box.property('right', { value: 0, get: true, set: true });
@@ -108,13 +109,13 @@ Box.method('update', function (dt)
         var point = this._points[i],
         r = (point instanceof Ball) ? point.getR() : 0;
         if (point.getCx() - r < this._left)
-            point.setCx(this._left + r - point.getCx() + r + this._left);
+            point.setCx(point.getCx() + 2 * this._k * (this._left + r - point.getCx()));
         if (point.getCx() + r > this._right)
-            point.setCx(this._right - r - point.getCx() - r + this._right);
+            point.setCx(point.getCx() + 2 * this._k * (this._right - r - point.getCx()));
         if (point.getCy() - r < this._top)
-            point.setCy(this._top + r - point.getCy() + r + this._top);
+            point.setCy(point.getCy() + 2 * this._k * (this._top + r - point.getCy()));
         if (point.getCy() + r > this._bottom)
-            point.setCy(this._bottom - r - point.getCy() - r + this._bottom);
+            point.setCy(point.getCy() + 2 * this._k * (this._bottom - r - point.getCy()));
     }
 });
 
