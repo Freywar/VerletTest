@@ -155,8 +155,10 @@ App.method('_onMouseUp', function (event)
 App.method('_onKeyDown', function (event)
 {
     if (event.keyCode === 112)
+    {
         this._helpBox.style.display = this._helpBox.style.display ? '' : 'none';
-    event.preventDefault();
+        event.preventDefault();
+    }
 });
 
 App.method('_init', function ()
