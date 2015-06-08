@@ -34,6 +34,12 @@ function method(cls, name, description)
 function abstract(name) { throw Error((name || 'This') + ' is an abstract method.'); }
 
 var Utils = {
+    Color: {
+        random: function ()
+        {
+            return 'rgb(' + [(Math.random() * 255) | 0, (Math.random() * 255) | 0, (Math.random() * 255) | 0].join(',') + ')';
+        }
+    },
     DOM: {
         getScreenSize: function ()
         {
@@ -54,6 +60,11 @@ function toUpperFirst(s)
     return s[0].toUpperCase() + s.slice(1)
 };
 
+function toLowerFirst(s)
+{
+    return s[0].toLowerCase() + s.slice(1)
+}
+
 var MObject = cls(Object, function (options)
 {
     this._id = ('Object' + (Object.id = (Object.id || 0) + 1));
@@ -68,3 +79,17 @@ var MObject = cls(Object, function (options)
             else throw Error('Unknown member ' + i);
         }
 });
+
+MObject.prototype.serialize = function ()
+{
+    var result = {}, getter;
+    for (var i in this)
+        if (i.indexOf('set') === 0 && this[getter = i.replace(/^set/, 'get')])
+        {
+            var r = this[getter]();
+            if (r instanceof MObject)
+                r = r.serialize();
+            result[toLowerFirst(i.replace(/^set/, ''))] = r;
+        }
+    return result;
+};

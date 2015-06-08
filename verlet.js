@@ -14,7 +14,7 @@ Point.property('px', { value: 0, get: true, set: true });
 Point.property('cx', { value: 0, get: true, set: true });
 Point.property('py', { value: 0, get: true, set: true });
 Point.property('cy', { value: 0, get: true, set: true });
-Point.property('pdt', { value: 0 });
+Point.property('pdt', { value: 0, get: true, set: true });
 
 Point.method('update', function (dt)
 {
@@ -42,9 +42,20 @@ Ball.property('r', { value: 0, get: true, set: true });
 
 Ball.method('render', function (ctx)
 {
-    ctx.fillStyle = this._color;
+
+
     ctx.beginPath();
     ctx.arc(this._cx, this._cy, this._r, 0, Math.PI * 2);
+    ctx.fillStyle = this._color;
+    ctx.fill();
+    var gx = this._cx * (1 - this._r / 3000),
+        gy = this._cy * (1 - this._r / 3000),
+        grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, this._r * 1.3);
+    grad.addColorStop(0, 'rgba(255,255,255,0.3');
+    grad.addColorStop(0.49, 'rgba(255,255,255,0');
+    grad.addColorStop(0.5, 'rgba(0,0,0,0');
+    grad.addColorStop(1, 'rgba(0,0,0,0.3');
+    ctx.fillStyle = grad;
     ctx.fill();
 });
 
