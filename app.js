@@ -23,9 +23,10 @@ var App = cls(MObject, function (options)
     this._helpBox.style.right = '0';
     this._helpBox.style.top = '0';
     this._helpBox.innerHTML = [
-'LMB: drag ball',
-'RMB: toggle ball info',
-'F1: toggle help window'
+       'LMB: drag ball',
+       'RMB: toggle ball info',
+       'F1: toggle help window',
+       'F2: restart'
     ].join('<br />');
 
 
@@ -159,6 +160,8 @@ App.method('_onKeyDown', function (event)
         this._helpBox.style.display = this._helpBox.style.display ? '' : 'none';
         event.preventDefault();
     }
+    else if (event.keyCode === 113)
+        this._init();
 });
 
 App.method('_init', function ()
@@ -185,6 +188,7 @@ App.method('_init', function ()
     this._scene.setPoints(points);
     this._intersection.setPoints([].concat(points));
     this._frictionBox.setPoints([].concat(points));
+    this._box.setPoints([]);
 })
 
 App.method('_save', function ()
@@ -209,7 +213,7 @@ App.method('_load', function ()
         restrictions = [
         this._intersection = new Intersection({ points: [] }),
         this._frictionBox = new FrictionBox({ points: [], color: 'rgba(0,0,255,0.2)', k: 0.05 }),
-        this._box = new Box({ points: [], color: 'rgba(255,0,0,0.2)' }),
+        this._box = new Box({ points: [], color: 'rgba(255,0,0,0.2)', k: 0.95 }),
         this._attraction = new Attractor({ k: 0.05 })
         ];
 

@@ -42,8 +42,6 @@ Ball.property('r', { value: 0, get: true, set: true });
 
 Ball.method('render', function (ctx)
 {
-
-
     ctx.beginPath();
     ctx.arc(this._cx, this._cy, this._r, 0, Math.PI * 2);
     ctx.fillStyle = this._color;
@@ -118,15 +116,25 @@ Box.method('update', function (dt)
     for (var i = 0; i < this._points.length; i++)
     {
         var point = this._points[i],
-        r = (point instanceof Ball) ? point.getR() : 0;
-        if (point.getCx() - r < this._left)
-            point.setCx(point.getCx() + 2 * this._k * (this._left + r - point.getCx()));
-        if (point.getCx() + r > this._right)
-            point.setCx(point.getCx() + 2 * this._k * (this._right - r - point.getCx()));
-        if (point.getCy() - r < this._top)
-            point.setCy(point.getCy() + 2 * this._k * (this._top + r - point.getCy()));
-        if (point.getCy() + r > this._bottom)
-            point.setCy(point.getCy() + 2 * this._k * (this._bottom - r - point.getCy()));
+            r = (point instanceof Ball) ? point.getR() : 0,
+            x = point.getCx(),
+            vx = x - point.getPx(),
+            y = point.getCy(),
+            vy = y - point.getPy(),
+            overflow;
+
+        if ((overflow = this._left - x + r) > 0 || (overflow = this._right - x - r) < 0)
+        {
+            x += 2 * this._k * overflow;
+            point.setCx(x);
+            point.setPx(x + vx * this._k);
+        }
+        if ((overflow = this._top - y + r) > 0 || (overflow = this._bottom - y - r) < 0)
+        {
+            y += 2 * this._k * overflow;
+            point.setCy(y);
+            point.setPy(y + vy * this._k);
+        }
     }
 });
 
