@@ -5,8 +5,8 @@
     .App .Box {
         background-color: rgba(255,255,255,0.5);
         border: 1px solid white;
-        box-sizing: border-box;
-        pointer-events: none;
+        V.Box-sizing: border-V.Box;
+        V.Pointer-events: none;
         position: absolute;
         top: 0;
         padding: 4px;
