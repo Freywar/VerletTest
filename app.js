@@ -15,8 +15,8 @@ var App = cls(MObject, function (options)
     this._context = this._canvas.getContext('2d');
     this._infoBox = Utils.DOM.create('div', 'Box', this._domNode,'',{left:0});
     this._helpBox = Utils.DOM.create('div', 'Box', this._domNode, [
-        'LMB: drag V.Ball',
-        'RMB: toggle V.Ball info',
+        'LMB: drag ball',
+        'RMB: toggle ball info',
         'F1: toggle help window',
         'F2: show system info',
         'F3: reset'
