@@ -14,10 +14,11 @@ var App = cls(MObject, function (options)
     this._helpBox.className += 'Box';
     this._helpBox.style.right = '0';
     this._helpBox.innerHTML = [
-       'LMB: drag ball',
-       'RMB: toggle ball info',
-       'F1: toggle help window',
-       'F2: restart'
+        'LMB: drag ball',
+        'RMB: toggle ball info',
+        'F1: toggle help window',
+        'F2: show system info',
+        'F3: reset'
     ].join('<br />');
 
     this._domNode.appendChild(this._canvas);
@@ -48,6 +49,7 @@ App.property('context', { value: null });
 App.property('infoBox', { value: null });
 App.property('helpBox', { value: null });
 App.property('canvas', { value: null });
+App.property('showSystemInfo', { value: false })
 
 App.property('domNode', { value: null, get: true });
 App.property('parentNode', {
@@ -85,16 +87,16 @@ App.property('height', {
     get: function () { return this._canvas.height; },
     set: function (value)
     {
-       var m = value / this.getHeight(),
-           sm = Math.sqrt(m),
-           points = this._scene && this._scene.getPoints();
-       if (points)
-           for (var i = 0; i < points.length; i++)
-           {
-               points[i].setCy(points[i].getCy() * m);
-               points[i].setPy(points[i].getPy() * m);
-               points[i].setR(points[i].getR() * sm)
-           }
+        var m = value / this.getHeight(),
+            sm = Math.sqrt(m),
+            points = this._scene && this._scene.getPoints();
+        if (points)
+            for (var i = 0; i < points.length; i++)
+            {
+                points[i].setCy(points[i].getCy() * m);
+                points[i].setPy(points[i].getPy() * m);
+                points[i].setR(points[i].getR() * sm)
+            }
 
         this._canvas.style.height = (this._canvas.height = value) + 'px';
         this._frictionBox.setHeight(value);
@@ -170,7 +172,15 @@ App.method('_onKeyDown', function (event)
         event.preventDefault();
     }
     else if (event.keyCode === 113)
+    {
+        this._showSystemInfo = !this._showSystemInfo;
+        event.preventDefault();
+    }
+    else if (event.keyCode === 114)
+    {
         this._init();
+        event.preventDefault();
+    }
 });
 
 App.method('_init', function ()
@@ -198,7 +208,10 @@ App.method('_init', function ()
     this._intersection.setPoints([].concat(points));
     this._frictionBox.setPoints([].concat(points));
     this._box.setPoints([]);
-})
+
+    for (var i = 0; i < 100; i++)
+        this._scene.update(1); //stabilize the system before first render
+});
 
 App.method('_save', function ()
 {
@@ -212,7 +225,8 @@ App.method('_save', function ()
             points: points.map(function (a) { return a.serialize() }),
             frictionIndices: this._frictionBox.getPoints().map(function (a) { return points.indexOf(a) }),
             normalIndices: this._box.getPoints().map(function (a) { return points.indexOf(a) }),
-            infoedIndex: this._infoedPoint ? points.indexOf(this._infoedPoint) : -1
+            infoedIndex: this._infoedPoint ? points.indexOf(this._infoedPoint) : -1,
+            showSystemInfo: this._showSystemInfo
         }));
     }
 });
@@ -221,10 +235,10 @@ App.method('_load', function ()
 {
     var data, points = null,
         restrictions = [
-        this._intersection = new Intersection({ points: [] }),
-        this._frictionBox = new FrictionBox({ points: [], color: 'rgba(0,0,255,0.2)', k: 0.05 }),
-        this._box = new Box({ points: [], color: 'rgba(255,0,0,0.2)', k: 0.95 }),
-        this._attraction = new Attractor({ k: 0.05 })
+            this._frictionBox = new FrictionBox({ points: [], color: 'rgba(0,0,255,0.2)', k: 0.05 }),
+            this._box = new Box({ points: [], color: 'rgba(255,0,0,0.2)', k: 0.95 }),
+            this._attraction = new Attractor({ k: 0.05 }),
+            this._intersection = new Intersection({ points: [], k: 0.95 })
         ];
 
     if (typeof (Storage) != "undefined" && (data = localStorage.getItem('verletAppSaveData')))
@@ -237,27 +251,65 @@ App.method('_load', function ()
         this._frictionBox.setPoints(data.frictionIndices.map(function (a) { return points[a] }));
         this._box.setPoints(data.normalIndices.map(function (a) { return points[a] }));
         this._infoedPoint = points[data.infoedIndex];
+        this._showSystemInfo = data.showSystemInfo;
     }
     this._scene = new Scene({ points: points, restrictions: restrictions });
 })
 
 App.method('_updateInfoBox', function ()
 {
-    if (this._infoedPoint)
+    if (this._infoedPoint || this._showSystemInfo)
     {
         this._infoBox.style.display = '';
-        var x = this._infoedPoint.getCx(),
-            y = this._infoedPoint.getCy(),
-            vx = (x - this._infoedPoint.getPx()) / this._infoedPoint.getPdt(),
-            vy = (y - this._infoedPoint.getPy()) / this._infoedPoint.getPdt();
-        this._infoBox.innerHTML = [
-            'Color: ' + '<div class="Color" style="background-color:' + this._infoedPoint.getColor() + '" ></div>',
-            'Mass: 1',
-            'Radius: ' + this._infoedPoint.getR().toFixed(2),
-            'Position: (' + x.toFixed(2) + '; ' + y.toFixed(2) + ')',
-            'Velocity: ' + Math.sqrt(vx * vx + vy * vy).toFixed(2) + ' (' + vx.toFixed(2) + '; ' + vy.toFixed(2) + ')',
-            'Energy: ' + (vx * vx / 2 + vy * vy / 2).toFixed(2) + ' (' + (vx * vx / 2).toFixed(2) + '; ' + (vy * vy / 2).toFixed(2) + ')',
-        ].join('<br />');
+        var info = '';
+        if (this._infoedPoint)
+        {
+            var x = this._infoedPoint.getCx(),
+                y = this._infoedPoint.getCy(),
+                vx = (x - this._infoedPoint.getPx()) / this._infoedPoint.getPdt(),
+                vy = (y - this._infoedPoint.getPy()) / this._infoedPoint.getPdt();
+
+            info += [
+                 'Color: ' + '<div class="Color" style="background-color:' + this._infoedPoint.getColor() + '" ></div>',
+                 'Mass: 1',
+                 'Radius: ' + this._infoedPoint.getR().toFixed(2),
+                 'Position: (' + x.toFixed(2) + '; ' + y.toFixed(2) + ')',
+                 'Velocity: ' + Math.sqrt(vx * vx + vy * vy).toFixed(2) + ' (' + vx.toFixed(2) + '; ' + vy.toFixed(2) + ')',
+                 'Energy: ' + (vx * vx / 2 + vy * vy / 2).toFixed(2) + ' (' + (vx * vx / 2).toFixed(2) + '; ' + (vy * vy / 2).toFixed(2) + ')',
+            ].join('<br />');
+        }
+        if (this._infoedPoint && this._showSystemInfo)
+            info += '<br /><br />';
+        if (this._showSystemInfo)
+        {
+            var fex = 0, fey = 0, fe = 0,
+                nex = 0, ney = 0, ne = 0,
+                vx, vy, v;
+            for (var i = 0; i < this._frictionBox.getPoints().length; i++)
+            {
+                vx = this._frictionBox.getPoints()[i].getVx();
+                vy = this._frictionBox.getPoints()[i].getVx();
+                v = this._frictionBox.getPoints()[i].getV();
+                fex += vx * vx / 2;
+                fey += vy * vy / 2;
+                fe += v * v / 2;
+            }
+            for (var i = 0; i < this._box.getPoints().length; i++)
+            {
+                vx = this._box.getPoints()[i].getVx();
+                vy = this._box.getPoints()[i].getVx();
+                v = this._box.getPoints()[i].getV();
+                nex += vx * vx / 2;
+                ney += vy * vy / 2;
+                ne += v * v / 2;
+            }
+            info += [
+                'Left part energy: ' + fe.toFixed(2) + ' (' + fex.toFixed(2) + '; ' + fey.toFixed(2) + ')',
+                'Right part energy: ' + ne.toFixed(2) + ' (' + nex.toFixed(2) + '; ' + ney.toFixed(2) + ')',
+                'Full energy: ' + (ne + fe).toFixed(2) + ' (' + (nex + fex).toFixed(2) + '; ' + (ney + fey).toFixed(2) + ')'
+            ].join('<br />');
+        }
+        this._infoBox.innerHTML = info;
     }
     else
         this._infoBox.style.display = 'none';

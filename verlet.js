@@ -14,6 +14,9 @@ Point.property('px', { value: 0, get: true, set: true });
 Point.property('cx', { value: 0, get: true, set: true });
 Point.property('py', { value: 0, get: true, set: true });
 Point.property('cy', { value: 0, get: true, set: true });
+Point.property('vx', { get: function () { return (this._cx - this._px) / this._pdt; } });
+Point.property('vy', { get: function () { return (this._cy - this._py) / this._pdt; } });
+Point.property('v', { get: function () { return Math.sqrt(Math.pow(this.getVx(), 2) + Math.pow(this.getVy(), 2)) } });
 Point.property('pdt', { value: 0, get: true, set: true });
 
 Point.method('update', function (dt)
@@ -81,17 +84,35 @@ Intersection.method('update', function (dt)
             var intDr = dr - r1 - r2;
             if (intDr < 0)
             {
-                var m = 0.5 * intDr / dr;
-                dx *= m;
-                dy *= m;
-                one.setCx(x1 - dx);
-                one.setCy(y1 - dy);
-                two.setCx(x2 + dx);
-                two.setCy(y2 + dy);
+                var v1x = one.getVx();
+                var v1y = one.getVy();
+                var v2x = two.getVx();
+                var v2y = two.getVy();
+
+                var factor = (dr - (r1 + r2)) / dr;
+                one.setCx(one.getCx() - dx * (dr - (r1 + r2)) / dr * 0.5);
+                one.setCy(one.getCy() - dy * (dr - (r1 + r2)) / dr * 0.5);
+                two.setCx(two.getCx() + dx * (dr - (r1 + r2)) / dr * 0.5);
+                two.setCy(two.getCy() + dy * (dr - (r1 + r2)) / dr * 0.5);
+
+                var f1 = (this._k * (dx * v1x + dy * v1y)) / (dr * dr);
+                var f2 = (this._k * (dx * v2x + dy * v2y)) / (dr * dr);
+
+
+                v1x += f2 * dx - f1 * dx;
+                v2x += f1 * dx - f2 * dx;
+                v1y += f2 * dy - f1 * dy;
+                v2y += f1 * dy - f2 * dy;
+
+                one.setPx(one.getCx() - v1x * one.getPdt());
+                one.setPy(one.getCy() - v1y * one.getPdt());
+                two.setPx(two.getCx() - v2x * two.getPdt());
+                two.setPy(two.getCy() - v2y * two.getPdt());
             }
         }
     }
 });
+Intersection.property('k', { value: 1, get: true, set: true });
 
 var Box = cls(Restriction, function () { Box.base.constructor.apply(this, arguments) });
 Box.property('color', { value: '#000000', get: true, set: true });
