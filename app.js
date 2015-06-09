@@ -275,14 +275,14 @@ App.method('_onMouseDown', function (event)
     var points = this._scene.getPoints()
     for (var i = 0; i < points.length; i++)
     {
-        var V.Point = points[i],
-            dx = event.layerX - V.Point.getCx(),
-            dy = event.layerY - V.Point.getCy();
-        if (dx * dx + dy * dy < V.Point.getR() * V.Point.getR())
+        var point = points[i],
+            dx = event.layerX - point.getCx(),
+            dy = event.layerY - point.getCy();
+        if (dx * dx + dy * dy < point.getR() * point.getR())
         {
             if (event.button === 0)
             {
-                this._attractedPoint = V.Point;
+                this._attractedPoint = point;
                 this._attraction.setPoints([this._attractedPoint]);
                 var fp = this._damperBox.getPoints(), fi = fp.indexOf(this._attractedPoint);
                 if (~fi) fp.splice(fi, 1);
@@ -290,7 +290,7 @@ App.method('_onMouseDown', function (event)
                 if (ni !== -1) np.splice(ni, 1);
             }
             else if (event.button === 2)
-                this._infoedPoint = (this._infoedPoint === V.Point) ? null : V.Point;
+                this._infoedPoint = (this._infoedPoint === point) ? null : point;
         }
     }
 });

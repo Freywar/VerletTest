@@ -10,7 +10,7 @@ var V = namespace();
         this._px = this._cx;
     if (!options.py)
         this._py = this._cy;
-});
+ });
 
 /// <summary> Color. </summary>
 V.Point.property('color', { value: '#000000', get: true, set: true });
@@ -53,6 +53,14 @@ V.Point.method('update', function (dt)
 /// <param name="ctx" type="CanvasRenderingContext"> Rendering context. </param>
 V.Point.method('render', function (ctx) { });
 
+V.Point.method('serialize', function ()
+{
+    var r = V.Point.base.serialize.apply(this, arguments);
+    delete r.vx;
+    delete r.vy;
+    delete r.v;
+    return r;
+});
 
 /// <summary> Abstract restriction class. </summary>
 V.Restriction = cls(MObject, function () { V.Restriction.base.constructor.apply(this, arguments) });

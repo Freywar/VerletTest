@@ -145,7 +145,7 @@ MObject.prototype.serialize = function ()
             var r = this[getter]();
             if (r instanceof MObject)
                 r = r.serialize();
-            result[toLowerFirst(i.replace(/^set/, ''))] = r;
+            result[Utils.String.toLowerFirst(i.replace(/^set/, ''))] = r;
         }
     return result;
 };
