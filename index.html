@@ -5,6 +5,25 @@
     <script src="core.js"></script>
     <script src="verlet.js"></script>
     <script src="app.js"></script>
+    <script type="text/javascript">
+        var app;
+
+        function loaded()
+        {
+            app = new App({
+                parentNode: document.body,
+                width: Utils.DOM.getScreenSize().x,
+                height: Utils.DOM.getScreenSize().y
+            });
+        }
+
+        function resized()
+        {
+            app.setWidth(Utils.DOM.getScreenSize().x);
+            app.setHeight(Utils.DOM.getScreenSize().y);
+        }
+
+    </script>
     <style type="text/css">
         body {
             margin: 0px;
@@ -20,6 +39,6 @@
     </style>
     <link href="app.css" rel="stylesheet" />
 </head>
-<body onload="new App({ parentNode: document.body, width: Utils.DOM.getScreenSize().x, height: Utils.DOM.getScreenSize().y });" onselectstart="return false;" oncontextmenu="return false;">
+<body onload="loaded()" onresize="resized()" onselectstart="return false;" oncontextmenu="return false;">
 </body>
 </html>

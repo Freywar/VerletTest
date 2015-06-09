@@ -49,10 +49,10 @@ Ball.method('render', function (ctx)
     var gx = this._cx * (1 - this._r / 3000),
         gy = this._cy * (1 - this._r / 3000),
         grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, this._r * 1.3);
-    grad.addColorStop(0, 'rgba(255,255,255,0.3');
-    grad.addColorStop(0.49, 'rgba(255,255,255,0');
-    grad.addColorStop(0.5, 'rgba(0,0,0,0');
-    grad.addColorStop(1, 'rgba(0,0,0,0.3');
+    grad.addColorStop(0, 'rgba(255,255,255,0.3)');
+    grad.addColorStop(0.49, 'rgba(255,255,255,0)');
+    grad.addColorStop(0.5, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.3)');
     ctx.fillStyle = grad;
     ctx.fill();
 });

@@ -64,17 +64,38 @@ App.property('width', {
     get: function () { return this._canvas.width; },
     set: function (value)
     {
+        var m = value / this.getWidth(),
+           sm = Math.sqrt(m),
+           points = this._scene && this._scene.getPoints();
+        if (points)
+            for (var i = 0; i < points.length; i++)
+            {
+                points[i].setCx(points[i].getCx() * m);
+                points[i].setPx(points[i].getPx() * m);
+                points[i].setR(points[i].getR() * sm)
+            }
+
         this._canvas.style.width = (this._canvas.width = value) + 'px';
         this._frictionBox.setWidth(value / 2);
         this._box.setLeft(value / 2);
         this._box.setWidth(value / 2);
-
     }
 });
 App.property('height', {
     get: function () { return this._canvas.height; },
     set: function (value)
     {
+       var m = value / this.getHeight(),
+           sm = Math.sqrt(m),
+           points = this._scene && this._scene.getPoints();
+       if (points)
+           for (var i = 0; i < points.length; i++)
+           {
+               points[i].setCy(points[i].getCy() * m);
+               points[i].setPy(points[i].getPy() * m);
+               points[i].setR(points[i].getR() * sm)
+           }
+
         this._canvas.style.height = (this._canvas.height = value) + 'px';
         this._frictionBox.setHeight(value);
         this._box.setHeight(value);
